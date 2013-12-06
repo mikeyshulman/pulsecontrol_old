@@ -58,7 +58,7 @@ classdef sm_pulsegroup < handle
     
     properties (Transient=true)
         last_update;
-        pack_data = struct('tab',{},'marktab',{},'wf',{},'marker',{});
+        %pack_data = struct('tab',{},'marktab',{},'wf',{},'marker',{});
     end
     
     methods
@@ -90,7 +90,7 @@ classdef sm_pulsegroup < handle
            b = isequal(p1,p2);
         end
         
-        function totab(pg,pulsedef, p_ind)
+        function tab_data = totab(pg,pulsedef, p_ind)
             global plsdata;
             %passed the pulsegroup and the index in plsgrp.pulses do turn
             %into a tab. defaults to the first
@@ -305,16 +305,16 @@ classdef sm_pulsegroup < handle
             
             mask = all(abs(diff(pulsetab(2:3, :), [], 2)) < 1e-14);
             pulsetab(:, [false, mask(2:end)&mask(1:end-1)]) = [];
-            pg.pack_data(p_ind).marktab = sortrows(mktab',1);
-            pg.pack_data(p_ind).readout = rdout;
-            pg.pack_data(p_ind).tab = pulsetab;
+            tab_data.marktab = sortrows(mktab',1);
+            tab_data.readout = rdout;
+            tab_data.tab = pulsetab;
         end
         
-        function towf(pg,clk,tbase,pulse_inds)
+        function tab_data=towf(pg,tab_data,clk,tbase,pulse_inds)
             dt=1e-11;
             %looks at pack_data(pulse_inds).tab and marktab and makes wf
             for jj = pulse_inds
-                if isempty(pg.pack_data(jj).tab)||isempty(pg.pack_data(jj).marktab)
+                if isempty(tab_data(jj).tab)||isempty(tab_data(jj).marktab)
                     error('pulse number %i not filled into table\n',jj)
                 end
                 if 0
@@ -333,7 +333,7 @@ classdef sm_pulsegroup < handle
                     %                 pulseinf.readout = [];
                     %             end
                 end
-                pulsetab=pg.pack_data(jj).tab;
+                pulsetab=tab_data.tab;
                 nchan = size(pulsetab, 1)-1;
                 npoints = round(max(pulsetab(1, :)) * tbase * clk/1e9);
                 
@@ -372,7 +372,7 @@ classdef sm_pulsegroup < handle
                 marker = zeros(nchan, npoints, 'uint8');
                 
                 % extend marktab to be right dimensions
-                mktab = pg.pack_data(jj).marktab;
+                mktab = tab_data(jj).marktab;
                 mktab(end+1:2*nchan+1,:) = 0;
                 
                 for i = 1:size(mktab, 2)
@@ -385,10 +385,10 @@ classdef sm_pulsegroup < handle
                     end
                 end
                 %plsgrp.pack_data(jj).marktab = mktab;
-                pg.pack_data(jj).marker = marker;
-                pg.pack_data(jj).wf = data;%+vc;
+                tab_data(jj).marker = marker;
+                tab_data(jj).wf = data;%+vc;
                 %plsgrp.readout = pulseinf.readout;
-                pg.last_update=now;
+                plsgrp.last_update=now;
             end
         end
         
@@ -493,11 +493,12 @@ classdef sm_pulsegroup < handle
                         plsdef(m).data(pardef(n).elem_num).(pardef(n).par)(pardef(n).ind) = pparams(n);
                     end
                 end
-                plsgrp.totab(plsdef(m),ind(m));
+                pack_data(m) = plsgrp.totab(plsdef(m),ind(m));
                 % towf(pg,clk,tbase,pulse_inds)
-                plsgrp.towf(clk,tbase, ind(m));
-                plsgrp.last_update = now;
+                %plsgrp.towf(tab_data,clk,tbase, ind(m));
+                %plsgrp.last_update = now;
             end
+            pg.pack_data=plsgrp.towf(pack_data,clk,tbase,1:length(ind));
         end
         
         function pulse = default(~,plsnum)

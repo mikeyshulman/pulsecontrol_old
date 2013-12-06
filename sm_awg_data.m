@@ -167,18 +167,48 @@ classdef sm_awg_data < handle
             if ~exist('opts','var')
                 opts = '';
             end
+            %awgdata.lint()
+            grp_changed = true(1,length(awgdata.queue));
+            if isempty(strfind(opts,'force'))
+                for j = 1:length(awgdata.memory)
+                    grp_changed(j) = ~isequal(awgdata.queue{j}.to_struct,awgdata.memory(j).grp);
+                end
+            end
+            awgdata.changed = any(grp_changed);
+            start_ind = find(grp_changed,1);
+            if isempty(start_ind)
+                fprintf(['queue is same as memory. nothing to do\n',...
+                    'consider ''force'' option\n']);
+                return
+            end
+            fprintf('starting sync from group %i\n',start_ind);
+            
             use_trig = zeros(1,length(awgdata.queue));
             for j = 1:length(awgdata.queue)
                use_trig(j) = (isempty(awgdata.queue{j}.n_rep) || ...
                    awgdata.queue{j}.n_rep(1) ~= Inf) && isempty(strfind(awgdata.queue{j}.options, 'notrig')); 
             end
-            for j = 1:length(awgdata.awg) %clear stuff out
-               awgdata.awg(j).pulsegroups = [];
-               awgdata.awg(j).waveforms = cell(0,length(awgdata.awg(j).chans));
-               awgdata.awg(j).pls_lens = zeros(size(awgdata.awg(j).waveforms));
+            for a = 1:length(awgdata.awg) %clear stuff out
+                if isempty(awgdata.awg(a).pulsegroups)
+                    chg = 1;
+                else
+                    chg = find([awgdata.awg(a).pulsegroups.grp_ind]==start_ind);
+                end
+                if isempty(chg)
+                    chg = 1;
+                end
+                %awgdata.awg(a).pulsegroups(chg:end)=[];
+                if chg ==1
+                    awgdata.awg(a).waveforms = cell(0,length(awgdata.awg(a).chans));
+                    awgdata.awg(a).pls_lens = zeros(size(awgdata.awg(a).waveforms));
+                else
+                    awgdata.awg(a).waveforms(awgdata.awg(a).pulsegroups(chg).st_ind:end,:)=[];
+                    awgdata.awg(a).pls_lens(awgdata.awg(a).pulsegroups(chg).st_ind:end,:)=[];
+                end
             end
-            %now add a trigger pls to each awg
+            %now add a trigger pls to each awg if there are no wfs
             for a = 1:length(awgdata.awg) %add triggers to each
+                if 1 %awgdata.awg(a).is_wf_list_empty
                 clear wf_data;
                 wf_data.wf=zeros(1,awgdata.awg(a).trig_pls.len);
                 wf_data.marker=repmat(1,1,awgdata.awg(a).trig_pls.len); % channel 1&3 marker 1
@@ -187,32 +217,33 @@ classdef sm_awg_data < handle
                 write_wf_file(wf_data,fname,1,awgdata.awg(a).clk);
 %                awgloadwfm(a,zdata,zmarker,sprintf('trig_%08d',awgdata(a).triglen),1,1);
                 %awgdata.awg(j).add_trig_wf();
+                end
             end
             go_tos = zeros(0,length(awgdata.awg));
             n_reps = zeros(0,length(awgdata.awg));
             %jumps = zeros(0,length(awgdata.awg));
             basename = 'awg%d_grp%04d_ch%04d_wf%04d.wf';
             seq_lines = zeros(1,length(awgdata.awg));
-            awgdata.memory = [];
-            for g = 1:length(awgdata.queue)
+            awgdata.memory(start_ind:end) = [];
+            for g = start_ind:length(awgdata.queue)
                 use_awg =false(1,length(awgdata.awg));
                 use_awg([awgdata.chans(awgdata.queue{g}.chan).awg])=true;
-                if awgdata.changed || isempty(awgdata.queue{g}.pack_data) || ...
-                        isempty(awgdata.queue{g}.pack_data(1).wf)||isempty(awgdata.queue{g}.pack_data(1).marker)
+                if 1%awgdata.changed || isempty(awgdata.queue{g}.pack_data) || ...
+                        %isempty(awgdata.queue{g}.pack_data(1).wf)||isempty(awgdata.queue{g}.pack_data(1).marker)
                    %pg=make(plsgrp,ind, clk, tbase, time)
                    clks = [awgdata.awg(use_awg).clk];
                    if any(clks ~=clks(1))
                        error('different awgs with different clocks for same group!');
                    end
-                    awgdata.queue{g}.make([],clks(1),plsdata.tbase,[]); 
+                    pg_struct=awgdata.queue{g}.make([],clks(1),plsdata.tbase,[]); 
                 end
                 if isempty(awgdata.queue{g}.n_rep)
-                   nr = ones(1,size(awgdata.queue{g}.pack_data,2)); 
+                   nr = ones(1,size(pg_struct.pack_data,2)); 
                 else
                     nr = awgdata.queue{g}.n_rep;
                 end
                 if isempty(awgdata.queue{g}.jump)
-                    jmp = [2:size(awgdata.queue{g}.pack_data,2), 1];
+                    jmp = [2:size(pg_struct.pack_data,2), 1];
                 else
                     jmp = awgdata.queue{g}.jump;
                 end
@@ -245,10 +276,10 @@ classdef sm_awg_data < handle
                            error('cannot repeat wfs with pack option'); 
                         end
                         pack_data = struct();
-                        pack_data.wf = [awgdata.queue{g}.pack_data.wf];
-                        pack_data.marker = [awgdata.queue{g}.pack_data.marker];
+                        pack_data.wf = [pg_struct.pack_data.wf];
+                        pack_data.marker = [pg_struct.pack_data.marker];
                     else
-                        pack_data = awgdata.queue{g}.pack_data;
+                        pack_data = pg_struct.pack_data;
                     end
                     if first_time_loaded
                        st_ind = 1+size(awgdata.awg(awg_ind).waveforms,1);

@@ -294,7 +294,7 @@ awgdata.queue{1} = pg;
 plschans = {[2 1], [3 4]};
 for j = 1:length(plschans)
 %plen, max_evo, eps, evo
-for eps = linspace(1,4,10)
+for eps = linspace(1,4,4)
 clear s;
 s.options = 'pack loop';
 s.name = 'ramsey';
