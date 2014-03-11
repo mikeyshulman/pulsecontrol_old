@@ -24,7 +24,7 @@ classdef sm_awg_data < handle
             % write_seq: write the queue to a seq file
             % lint: check things for consistency
             % load_seq: load the sequence onto each awg
-    
+            
     properties
         name='awgdata';
         awg;
@@ -57,62 +57,6 @@ classdef sm_awg_data < handle
         end
         
         function sync(awgdata)
-            if 0
-            %first find where to start syncing
-            awgdata.lint();
-            start_ind = 1;
-            for j = 1:length(awgdata.queue)
-               start_ind = j;
-                if ~isequal(awgdata.queue{j},awgdata.memory(j).grp)
-                   break
-               end
-            end
-            
-            %now clear out everything start_ind and after
-            for j = 1:length(awgdata.awg)
-                awgdata.awg{j}.rm_seq(awgdata.memory(start_ind-1).awg_seq_ind,'after');
-                awgdata.awg{j}.rm_wf(awgdata.memory(start_ind-1).awg_wf_ind,'after');
-            end
-            awgdata.memory(start_ind:end) = [];
-            for j = start_ind:length(awgdata.queue)
-            %construct table of awgs and channels
-                awg_inds = [awgdata.chans(awgdata.queue{j}.chan).awg];
-                chan_inds = [awgdata.chans(awgdata.queue{j}.chan).channel];
-                split = 0;
-                if ~all(awg_inds)==awg_inds(1)
-                    split = 1;
-                   warning('making groups across different awgs. beware...\n'); 
-                end
-                clk = [awgdata.awg(awg_inds).clk];
-                if ~all(clk)==clk(1)
-                   error('group %i across awg %i has different clocks %i', j,awg_inds,clk); 
-                else
-                    clk = clk(1);
-                end
-                %function pg=make(plsgrp,ind, clk, tbase, time)
-                %ind empty makes all, tbase empty uses plsdata.tbase
-                % time not given uses now;
-                awgdata.queue{g}.make([],clk,[]);
-                if strfind(awgdata.queue{j}.options,'pack')
-                    pack_data.wf = [awgdata.queue{j}.pack_data.wf];
-                    pack_data.marker = [awgdata.queue{j}.pack_data.marker];
-                else
-                    pack_data = awgdata.queue{j}.pack_data;
-                end
-                basename = [awgdata.queue{j}.name,'_%05d'];
-                for ch = awgdata.queue{j}.chan
-                    %load_raw_wf(awg, data, marker, name, chan,define)
-                    for wfind = 1:length(pack_data)
-                        wf_name = sprintf(basename,wfind);
-                        awgdata.awg(awg_ind(ch)).load_raw_wf(packdata(wfind).wf(chan_ind(ch),:),...
-                            packdata(wfind).marker(chan_ind(ch),:),wf_name,1);
-                        awgdata.awg(awg_ind(ch)).waveforms{end+1} = wf_name;
-                    end
-                end
-                
-            
-            end
-            end
             awgdata.write_seq();
             awgdata.load_seq();
         end
