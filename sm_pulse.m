@@ -22,6 +22,9 @@ classdef sm_pulse < handle
               smp.(fn{j}) = stct.(fn{j}); 
            end
             smp.make_backward_compatible();
+            if isa(smp.trafofn,'function_handle');
+                smp.trafofn = func2str(smp.trafofn);
+            end
            if length(smp.param_names) < length(smp.pardef)
               warning('param names doesn''t have enough entries. this will be confusing...'); 
            end
@@ -42,6 +45,27 @@ classdef sm_pulse < handle
                 smp.pardef = pdef;
             end
         end
+    end %methods
+    methods (Static)
+        function new_pardef = make_pardef_compatible(pardef)
+            if isstruct(pardef)
+                new_pardef = pardef;
+                return
+            elseif isnumeric(pardef)
+                new_pardef = struct();
+                for kk = 1:size(pardef,1)
+                    new_pardef(kk).elem_num = pardef(kk,1);
+                    if pardef(kk,2)<0
+                        new_pardef(kk).par = 'time';
+                    else
+                        new_pardef(kk).par = 'val';
+                    end
+                    new_pardef(kk).ind = abs(smp.pardef(kk,2));
+                end
+            else
+                error('pardef format not recognized');
+            end
+        end % end function
     end
     
 end

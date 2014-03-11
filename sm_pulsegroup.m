@@ -91,7 +91,7 @@ classdef sm_pulsegroup < handle
         end
         
         function tab_data = totab(pg,pulsedef, p_ind)
-            global plsdata;
+            %global plsdata;
             %passed the pulsegroup and the index in plsgrp.pulses do turn
             %into a tab. defaults to the first
             % will populate transient variable pack_data
@@ -589,10 +589,16 @@ if ischar(pd)
 end
 changedout=0;
 changed = 1;
+%tps = {pulse.data.type};
+%is_hash = strncmp(tps,'#',1);
+%flds = false(1,length(tps));
+%for j = 1:length(flds)
+%  flds(j) = isfield(pd,tps{j}(2:end));  
+%end
 while changed
     changed=0;
     for i=1:length(pulse.data)
-        if ~changed && (pulse.data(i).type(1) == '#')
+        if ~changed && strcmp('#',pulse.data(i).type(1))%(pulse.data(i).type(1) == '#')
             entries=regexp(pulse.data(i).type(2:end),'(\d*;)?([^,])*','tokens');
             for e=1:length(entries)
                 if isempty(ind) || isempty(entries{e}{1}) || (ind == str2num(entries{e}{1}))
@@ -609,7 +615,8 @@ while changed
                     nels={nels};
                 end
                 if iscell(nels)
-                    nels=struct('type',nels,'time',[],'val',[]);
+                    %nels=struct('type',nels,'time',[],'val',[]);
+                    nels=struct('time',[],'type',nels,'val',[]);
                 end
                 template=pulse.data(i);
                 pulse.data(i)=[];
@@ -617,12 +624,16 @@ while changed
                 ov = ~isnan(template.val);
                 for j=1:length(nels)
                     if ischar(nels(j))
-                        nels(j) = struct('type',nels(j),'time',[],'val',[]);
+                        %nels(j) = struct('type',nels(j),'time',[],'val',[]);
+                        nels(j) = struct('time',[],'type',nels(j),'val',[]);
                     end
                     nels(j).time(ot)=template.time(ot);
                     nels(j).val(ov)=template.val(ov);
                 end
-                pulse.data = [pulse.data(1:i-1) orderfields(nels,pulse.data(1)) pulse.data(i:end)];
+                %pulse.data = [pulse.data(1:i-1) orderfields(nels,pulse.data(1)) pulse.data(i:end)];
+                pulse.data = [pulse.data(1:i-1), nels, pulse.data(i:end)];
+                %is_hash = [is_hash(1:i),is_hash(i:end)]; %copy the ith is_hash
+                %flds = [flds(1:i),flds(i:end)]; %copy the ith flds
                 changed=1;
                 changedout=1;
                 if isfield(pulse,'pardef') && ~isempty(pulse.pardef)
@@ -630,7 +641,7 @@ while changed
                 end
                 break;
                 
-            end
+            end %isfield
         end
     end
 end
@@ -639,13 +650,12 @@ end
 
 function pardef = bump_pardef(pardef, from, by)
 tobump=find([pardef.elem_num] > from);
-%FIXME this is stupid
-% for j = tobump
-%    pardef(j).elem_num = pardef(j).elem_num+by; 
-% end
-new_nums = num2cell([pardef(tobump).elem_num]+by);
-[pardef(tobump).elem_num]=deal(new_nums{:});
-%[pardef(tobump).elem_num]=deal(pardef(tobump).elem_num);
+%this for loop is faster and easier to read than the vecotrized version
+for j = tobump
+   pardef(j).elem_num = pardef(j).elem_num+by; 
+end
+%new_nums = num2cell([pardef(tobump).elem_num]+by);
+%[pardef(tobump).elem_num]=deal(new_nums{:});
 end
 
 function [pd]=pdpreload(pd, time)

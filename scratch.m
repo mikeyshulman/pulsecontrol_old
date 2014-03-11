@@ -294,7 +294,114 @@ awgdata.queue{1} = pg;
 plschans = {[2 1], [3 4]};
 for j = 1:length(plschans)
 %plen, max_evo, eps, evo
-for eps = linspace(1,4,4)
+for eps = linspace(1,4,3)
+clear s;
+s.options = 'pack loop';
+s.name = 'ramsey';
+s.pulses = [57 57];
+s.params = {[4, .11, eps 0],[4, .11, eps+.1 0]};
+s.chan = plschans{j};
+s.varpar{1} =struct('param_num',4,'val',(1:100)*1e-3);
+s.varpar{2} =struct('param_num',4,'val',(1:100)*1e-3);
+%s.dict = {'right'};
+s.dict = {struct('prep','@adprep','read','@adread'),'right'};
+clear pg
+awgdata.queue{end+1} = sm_pulsegroup(s);
+end
+end
+
+try
+    awgdata.awg(1).inst= visa('ni','tcpip::140.247.189.8::INSTR');
+    fopen(awgdata.awg(1).inst);
+end
+
+
+%% new one using sm_pulse objects
+clear all;
+clear all global
+b = instrfind;
+delete(b(:));
+%plsdata2=load('plsdata_2012_08_22'); 
+plsdata2 = load('z:/qDots/awg_pulses/plsdata_2012_08_22.mat');
+plsdata2 = plsdata2.plsdata;
+
+%plsdata.grpdir = '/Users/michaelshulman/Documents/MATLAB/';
+%plsdata.grpdir = '/Users/mikey/Documents/MATLAB/';
+plsdata.grpdir = 'z:/Mikey/software_dev/test/';
+global plsdata
+%plsdata.pulses = struct();
+plsdata2.pulses = plsdata2.pulses(14:end);
+for j = 1:length(plsdata2.pulses)
+    plsdata.pulses(j) = sm_pulse(plsdata2.pulses(j));
+end
+plsdata.tbase = 1000;
+
+clear s;
+s.name = 'testpg';
+s.pulses = 2;
+s.params = {[4 .2 .3]};
+s.chan = [3 4];
+s.varpar{1} =struct('param_num',2,'val',(1:100)*1e-3);
+%s.dict = {'right'};
+s.dict = {struct('prep','@adprep','read','@adread'),'right'};
+clear pg
+pg = sm_pulsegroup(s);
+
+% s.chan = [4 5];
+% s.params{1}(2) = .4;
+% pg2 = sm_pulsegroup(s);
+% 
+% s.params{1}(2) = .23;
+% s.chan = [5 6];
+% pg3 = sm_pulsegroup(s);
+
+% clear s;
+% s.groups = {pg,pg2};
+% cg = sm_combo_group(s);
+
+
+
+clear s
+s.wf_dir= [plsdata.grpdir,'tmp/awg1/'];
+s.trig_pls.name = 'trig_awg1';
+s.trig_pls.len = 1000;
+s.trig_pls.chan = 2;
+s.trig_pls.marker = 1;
+awg = sm_awg(s);
+%s.wf_dir = [plsdata.grpdir, 'tmp/awg2/'];
+%s.trig_pls.name = 'trig_awg2';
+%s.slave = 1;
+%awg2 = sm_awg(s);
+
+chans = struct();
+for j =1:4
+    if j <5
+        chans(j).awg = 1;
+       chans(j).channel = j; 
+    else
+        chans(j).awg = 2;
+        chans(j).channel = j-4;
+    end
+    chans(j).scale =10;
+    chans(j).offset =0;
+end
+
+clear s;
+s.awg = awg;
+%s.awg(2) = awg2;
+s.chans = chans;
+s.name = 'awgdata';
+global awgdata;
+awgdata = sm_awg_data(s);
+
+
+awgdata.queue{1} = pg;
+
+
+plschans = {[2 1], [3 4]};
+for j = 1:length(plschans)
+%plen, max_evo, eps, evo
+for eps = linspace(1,4,3)
 clear s;
 s.options = 'pack loop';
 s.name = 'ramsey';

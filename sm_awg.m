@@ -620,9 +620,12 @@ classdef sm_awg < handle
            if isempty(strfind(seq_file,awg.wf_dir))
               seq_file = [awg.wf_dir,seq_file]; 
            end
+           seq_file = strrep(seq_file,'/','\\'); %awg likes double slashes
            %give it channel 1. doesn't really matter
-           %fprintf(awg.inst,'SOUR%d:FUNC:USER: "%s"\n',1,seq_file);
-           fprintf(awg.inst,'SOUR%d:FUNC:USER "z:\\Mikey\\software_dev\\test\\tmp\\awg1\\0000.seq"',1);
+           msg = sprintf('SOUR%d:FUNC:USER "%s"',1,seq_file);
+           fprintf('%s\n',msg);
+           fprintf(awg.inst,msg);
+           %fprintf(awg.inst,'SOUR%d:FUNC:USER "z:\\Mikey\\software_dev\\test\\tmp\\awg1\\0000.seq"',1);
            %awg.wait()
            %1ns wait hard coded for slaved awgs
            if awg.slave
@@ -630,7 +633,7 @@ classdef sm_awg < handle
                  fprintf(awg.inst, sprintf('SEQ:ELEM%d:TWAIT 1\n', awg.pulsegroups(g).st_ind)); 
               end
            end
-
+           awg.write_gotos;
            out = 1;
            
         end
