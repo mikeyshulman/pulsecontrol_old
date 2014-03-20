@@ -149,15 +149,16 @@ classdef pls_plsgroup < handle
             end
             
             if isnumeric(pg.pulses)
-                if any(pg.pulses>length(plsdata))
+                global plsdata;
+                if any(pg.pulses>length(plsdata.pulses))
                     error('requested pulses %i, but only %i pulses in plsdata',pg.pulses,length(plsdata.pulses))
                 end
                 pg.pulses = plsdata.pulses(pg.pulses);
             end
-            dp_cp_pls = pg.pulses(pinds(ind));%(ind);
+            %dp_cp_pls = pg.pulses(pinds(ind));%(ind);
             
             if ~isempty(pg.dict)
-                pg.dict=pdpreload(pg.dict,time);
+                pd=pls_dict.pdpreload(pg.dict,time);
             end
             
             for m = 1:length(ind)
@@ -183,9 +184,10 @@ classdef pls_plsgroup < handle
                 % Apply dictionary before varpars; avoids many random bugs.
                 if ~isempty(pg.dict)
                     if isstruct(pg.dict)
-                        dp_cp_pls.apply_dict(pg.dict(ind(m)),time,ind(m));
+                        error('not yet implemented');
+                        %dp_cp_pls.apply_dict(pg.dict(ind(m)));
                     else
-                        dp_cp_pls.apply_dict(pg.dict,time,ind(m));
+                        dp_cp_pls.apply_dict(pd);
                     end
                     
                 end
@@ -202,6 +204,7 @@ classdef pls_plsgroup < handle
                 end
                 pack_data(m) = dp_cp_pls.to_tab;
             end
+            %tab_data,clk,tbase,pulse_inds
             pg.pack_data = pls_elem.tabtowf(pack_data,clk,tbase,1:length(ind));
             plsgrp.last_update = now;
         end
@@ -285,12 +288,7 @@ if ischar(pd)
 end
 changedout=0;
 changed = 1;
-%tps = {pulse.data.type};
-%is_hash = strncmp(tps,'#',1);
-%flds = false(1,length(tps));
-%for j = 1:length(flds)
-%  flds(j) = isfield(pd,tps{j}(2:end));  
-%end
+
 while changed
     changed=0;
     for i=1:length(pulse.data)
@@ -344,70 +342,70 @@ end
 return
 end
 
-function pardef = bump_pardef(pardef, from, by)
-tobump=find([pardef.elem_num] > from);
-%this for loop is faster and easier to read than the vecotrized version
-for j = tobump
-   pardef(j).elem_num = pardef(j).elem_num+by; 
-end
-%new_nums = num2cell([pardef(tobump).elem_num]+by);
-%[pardef(tobump).elem_num]=deal(new_nums{:});
-end
+% function pardef = bump_pardef(pardef, from, by)
+% tobump=find([pardef.elem_num] > from);
+% %this for loop is faster and easier to read than the vecotrized version
+% for j = tobump
+%    pardef(j).elem_num = pardef(j).elem_num+by; 
+% end
+% %new_nums = num2cell([pardef(tobump).elem_num]+by);
+% %[pardef(tobump).elem_num]=deal(new_nums{:});
+% end
 
-function [pd]=pdpreload(pd, time)
-%function [pd]=pdpreload(pd, time)
-% replace any dictionaries in pd with the contents of the dictionary.  Judicous
-% use can vastly speed up pulse dictionaries
-% time, if specified, gives the effective time to load the dictionary at.
-
-if ~exist('time','var')
-    time=[];
-end
-
-if iscell(pd)
-   for i=1:length(pd)
-     pd{i} = pdpreload(pd{i},time);
-   end
-   return;
-end
-
-if ischar(pd)
-    pd=pdload(pd,time);
-end
-end
-
-function pd = pdload(name, opts)
-%function pd = pdload(name, opts)
-% Load most recent entry in a pulse dictionary.  Load the entire 
-% dictionary if opts='all'
-% if opts is a number, load the most recent dictionary before that.
-%   where opts is a time as returned by 'now' or 'getscantime'
-
-global plsdata;
-
-if isstruct(name) % This allows pdload(pload('x')) to be equiv to pdload('x')
-    pd=name;
-    return;
-end
-
-if ~exist('opts','var')
-    opts = '';
-end
-
-
-if isempty(strfind(opts,'all')) && (isempty(opts) || ~isnumeric(opts))
-  load([plsdata.grpdir, 'pd_', name,'_last']);
-else
-  load([plsdata.grpdir, 'pd_', name]);
-  if isnumeric(opts) && ~isempty(opts)
-     times=cellfun(@(x) getfield(x,'time'),pd);
-     i=find(times < opts,1,'last');
-     if isempty(i)
-        error('cannot find dictionary from specified time'); 
-     else
-        pd=pd{i};
-     end
-  end  
-end
-    
-end
+% function [pd]=pdpreload(pd, time)
+% %function [pd]=pdpreload(pd, time)
+% % replace any dictionaries in pd with the contents of the dictionary.  Judicous
+% % use can vastly speed up pulse dictionaries
+% % time, if specified, gives the effective time to load the dictionary at.
+% 
+% if ~exist('time','var')
+%     time=[];
+% end
+% 
+% if iscell(pd)
+%    for i=1:length(pd)
+%      pd{i} = pdpreload(pd{i},time);
+%    end
+%    return;
+% end
+% 
+% if ischar(pd)
+%     pd=pdload(pd,time);
+% end
+% end
+% 
+% function pd = pdload(name, opts)
+% %function pd = pdload(name, opts)
+% % Load most recent entry in a pulse dictionary.  Load the entire 
+% % dictionary if opts='all'
+% % if opts is a number, load the most recent dictionary before that.
+% %   where opts is a time as returned by 'now' or 'getscantime'
+% 
+% global plsdata;
+% 
+% if isstruct(name) % This allows pdload(pload('x')) to be equiv to pdload('x')
+%     pd=name;
+%     return;
+% end
+% 
+% if ~exist('opts','var')
+%     opts = '';
+% end
+% 
+% 
+% if isempty(strfind(opts,'all')) && (isempty(opts) || ~isnumeric(opts))
+%   load([plsdata.grpdir, 'pd_', name,'_last']);
+% else
+%   load([plsdata.grpdir, 'pd_', name]);
+%   if isnumeric(opts) && ~isempty(opts)
+%      times=cellfun(@(x) getfield(x,'time'),pd);
+%      i=find(times < opts,1,'last');
+%      if isempty(i)
+%         error('cannot find dictionary from specified time'); 
+%      else
+%         pd=pd{i};
+%      end
+%   end  
+% end
+%     
+% end

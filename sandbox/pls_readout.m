@@ -8,7 +8,7 @@ classdef pls_readout < pls_elem
     methods
         function rd = pls_readout(varargin)
             rd =rd@pls_elem(varargin{:});
-            rd.data = struct('time',[],'st_dly',[],'ed_dly',[],'meas_pt',[],'flag',1);
+            rd.data = struct('time',1,'st_dly',.2,'ed_dly',0,'meas_pt',[],'flag',1);
         end
         
         function [pulsetab, mktab] = make_tab(rd)

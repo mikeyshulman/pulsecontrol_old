@@ -1,4 +1,4 @@
-classdef pls_elem < matlab.mixin.Heterogeneous &  matlab.mixin.Copyable & handle
+classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable
     %classdef pls_elem < matlab.mixin.Heterogeneous &  matlab.mixin.Copyable & handle
     %   pulse element class. has properties name and data;
     %   methods: constructor, to_tab
@@ -71,7 +71,7 @@ classdef pls_elem < matlab.mixin.Heterogeneous &  matlab.mixin.Copyable & handle
             end
             %looks at pack_data(pulse_inds).tab and marktab and makes wf
             for jj = pulse_inds
-                if isempty(tab_data(jj).pulsetab)||isempty(tab_data(jj).marktab)
+                if isempty(tab_data(jj).pulsetab)%||isempty(tab_data(jj).marktab)
                     error('pulse number %i not filled into table\n',jj)
                 end
                 

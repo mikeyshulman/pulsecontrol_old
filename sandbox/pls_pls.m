@@ -21,6 +21,29 @@ classdef pls_pls < matlab.mixin.Copyable & handle
     
     methods    
         function pls = pls_pls(stct)
+            if ~isfield(stct,'elems')
+               error('no elems found in pulse. invalid'); 
+            end
+            switch class(stct.elems)
+                case {'pls_elem','pls_blank'}
+                    tmp = stct.elems;
+                case 'cell'
+                    tmp(length(stct.elems))=pls_elem();
+                    for j = 1:length(tmp)
+                        if isa(stct.elems{j},'pls_elem')
+                            tmp(j) = stct.elems{j};
+                        elseif isa(stct.elems{j},'pls')
+                            tmp(j) = stct.elems{j}.to_elem;
+                        elseif ischar(stct.elems{j})
+                            tmp(j) = pls_blank(['@',stct.elems{j}]);
+                        else
+                            error('cannot turn a %s into a pls_elem',class(stct.elems{j}));
+                        end
+                    end
+                otherwise
+                    error('known elems type of class %s',class(stct.elems))
+            end
+            stct.elems = tmp;
             fn = fieldnames(stct);
             pr = properties('pls_pls');
             fn = intersect(fn,pr);
@@ -41,20 +64,20 @@ classdef pls_pls < matlab.mixin.Copyable & handle
             end
         end
         
-        function out =to_tab(pls)
+        function out =to_tab(pulse)
             pulsetab = zeros(3, 0);
             mktab =  zeros(5, 0);
             fillpos =[];
             readout = [];
             readpos =[];
-            if ~isempty(pls.fill)&&~isempty(pls.fill.elem)
-               fill_1 = pls.fill.elem;
+            if ~isempty(pulse.fill)&&~isempty(pulse.fill.elem)
+               fill_1 = pulse.fill.elem;
             else
                 fill_1 = 0;
             end
             fill_2 = [];
-            for j = 1:length(pls.elems)
-                if isa(pls.elems(j),'pls_fill')
+            for j = 1:length(pulse.elems)
+                if isa(pulse.elems(j),'pls_fill')
                     fill_2 = [fill_2,j];
                 end
             end
@@ -66,22 +89,22 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                error('two fills found'); 
             end
             if fill_1
-                filltime = pls.fill.time;
-                fillelem = pls.fill.elem;
+                filltime = pulse.fill.time;
+                fillelem = pulse.fill.elem;
             else
-                filltime = pls.elems(fill_2).time;
+                filltime = pulse.elems(fill_2).data.time;
                 fillelem = fill_2;
             end
             
-            for j = 1:length(pls.elems)
+            for j = 1:length(pulse.elems)
                 if j==fillelem
                    fillpos = size(pulsetab,2);
                    fillmarkpos = size(mktab,2);
-                   if isa(pls.elems(j),'pls_wait') || isa(pls.elems(j),'pls_reload')
+                   if isa(pulse.elems(j),'pls_wait') || isa(pulse.elems(j),'pls_reload')
                       fillpos = fillpos+1; 
                    end
                 end
-                [t,mt]= pls.elems(j).to_tab;
+                [t,mt]= pulse.elems(j).to_tab;
                 if ~isempty(pulsetab)
                     t(1,:) = t(1,:)+pulsetab(1,end);
                 end
@@ -108,23 +131,50 @@ classdef pls_pls < matlab.mixin.Copyable & handle
             out.readout = readout;
         end
         
-        function apply_dict(pulse,pd)
-            changed = 1;
+        function changedout = apply_dict(pulse,pd)
+            % If pd is a cell array, apply each dictionary in sequence.  This allows
+            % for some *neat* effects. :p
+            if iscell(pd)
+                changedout = 0;
+                while true
+                    changed = false;
+                    for i = 1:length(pd)
+                        c2 = pulse.apply_dict(pd{i});
+                        changed = changed || c2;
+                    end
+                    changedout = changed | c2;
+                    if ~changed
+                        break
+                    end
+                end
+                return;
+            end
+            
+            changed = true;
+            changedout=false;
+            if isstruct(pd)
+               pdtmp = pls_dict('tmp',pd);
+            else
+                pdtmp = copy(pd);
+            end
             while changed
-                changed=0;
+                changed=false;
                 for i=1:length(pulse.elems)
-                    if ~changed && isa(pls.elems(i),'pls_blank')
-                        if isfield(pd,pulse.elems(i).name)
-                            nels=pd.(pulse.elems(i).name);
-                            template=pulse.elems(i);
-                            ot = ~isnan(template.time);
-                            ov = ~isnan(template.val);
+                    if ~changed && isa(pulse.elems(i),'pls_blank') && pulse.elems(i).name(1)=='@'
+                        if isfield(pdtmp.data,pulse.elems(i).name(2:end))
+                            nels=(pdtmp.data.(pulse.elems(i).name(2:end)));
+                            if ischar(nels)
+                               nels = pls_blank(nels); 
+                            end
+                            template=copy(pulse.elems(i));
+                            %ot = ~isnan(template.time);
+                            %ov = ~isnan(template.val);
                             for j=1:length(nels)
-                                fn = fieldname(nels(j).data);
+                                fn = fieldnames(nels(j).data);
                                 for k = 1:length(fn)
-                                   if ~isempty(template.data.(fn{k})) && ~isnan(template.data.(fn{k}))
-                                      nels(j).data.(fn{k}) = template.data.(fn{k});
-                                   end
+                                    if isfield(template,fn{k}) && all(~isempty(template.data.(fn{k}))) && all(~isnan(template.data.(fn{k})))
+                                        nels(j).data.(fn{k}) = template.data.(fn{k});
+                                    end
                                 end
                             end
                             pulse.elems = [pulse.elems(1:i-1), nels, pulse.elems(i+1:end)];
@@ -138,8 +188,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                         end %isfield
                     end
                 end
-            end
-            
+            end 
         end
     end
     
@@ -174,5 +223,15 @@ classdef pls_pls < matlab.mixin.Copyable & handle
         end % end function
     end
     
+end
+
+function pardef = bump_pardef(pardef, from, by)
+tobump=find([pardef.elem_num] > from);
+%this for loop is faster and easier to read than the vecotrized version
+for j = tobump
+   pardef(j).elem_num = pardef(j).elem_num+by; 
+end
+%new_nums = num2cell([pardef(tobump).elem_num]+by);
+%[pardef(tobump).elem_num]=deal(new_nums{:});
 end
 
