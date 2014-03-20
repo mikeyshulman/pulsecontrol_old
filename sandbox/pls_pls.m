@@ -161,8 +161,8 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                 changed=false;
                 for i=1:length(pulse.elems)
                     if ~changed && isa(pulse.elems(i),'pls_blank') && pulse.elems(i).name(1)=='@'
-                        if isfield(pdtmp.data,pulse.elems(i).name(2:end))
-                            nels=(pdtmp.data.(pulse.elems(i).name(2:end)));
+                        if isfield(pdtmp,pulse.elems(i).name(2:end))
+                            nels=(pdtmp.(pulse.elems(i).name(2:end)));
                             if ischar(nels)
                                nels = pls_blank(nels); 
                             end
@@ -172,8 +172,8 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                             for j=1:length(nels)
                                 fn = fieldnames(nels(j).data);
                                 for k = 1:length(fn)
-                                    if isfield(template,fn{k}) && all(~isempty(template.data.(fn{k}))) && all(~isnan(template.data.(fn{k})))
-                                        nels(j).data.(fn{k}) = template.data.(fn{k});
+                                    if isfield(template,fn{k}) && all(~isempty(template.(fn{k}))) && all(~isnan(template.(fn{k})))
+                                        nels(j).(fn{k}) = template.(fn{k});
                                     end
                                 end
                             end

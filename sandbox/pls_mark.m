@@ -3,13 +3,13 @@ classdef pls_mark < pls_elem
     %   Detailed explanation goes here
     
     properties
+        time;
+        val;
     end
     
     methods
-        function rw = pls_mark(varargin)
-           rw = rw@pls_elem(varargin);
-           rw.data.struct('time',[],'val',[]);
-           rw.name = mark;
+        function rw = pls_mark(varargin{:})
+            rw.name = 'mark';
         end
         
         function [pulsetab, mktab]=make_tab(mk)

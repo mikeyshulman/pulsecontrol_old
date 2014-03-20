@@ -1,4 +1,4 @@
-classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable
+classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable & dynamicprops
     %classdef pls_elem < matlab.mixin.Heterogeneous &  matlab.mixin.Copyable & handle
     %   pulse element class. has properties name and data;
     %   methods: constructor, to_tab
@@ -14,7 +14,6 @@ classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable
     
     properties
         name;
-        data;
 %        dt = -1e-9;
     end
     properties (Constant)
@@ -48,19 +47,19 @@ classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable
             end
         end
         
-        function disp(pe)
-            switch length(pe)
-                case 0
-                    disp('empty pulse element');
-                case 1
-                    fprintf('instance of class %s, named %s\n',class(pe(1)),pe(1).name);
-                    disp(pe.data);
-                otherwise
-                    fprintf('pulse elem array of length %i\n\n',length(pe));
-                    fprintf('first element is:\n');
-                    disp(pe(1))
-            end
-        end
+%         function disp(pe)
+%             switch length(pe)
+%                 case 0
+%                     disp('empty pulse element');
+%                 case 1
+%                     fprintf('instance of class %s, named %s\n',class(pe(1)),pe(1).name);
+%                     disp(pe.data);
+%                 otherwise
+%                     fprintf('pulse elem array of length %i\n\n',length(pe));
+%                     fprintf('first element is:\n');
+%                     disp(pe(1))
+%             end
+%         end
     end
     
     methods (Static)

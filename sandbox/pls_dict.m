@@ -1,10 +1,9 @@
-classdef pls_dict < handle & matlab.mixin.Copyable
+classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
     %UNTITLED4 Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         name;
-        data;
         last_update;
         history;
         time_stamps;
@@ -14,7 +13,11 @@ classdef pls_dict < handle & matlab.mixin.Copyable
     methods
         function pd=pls_dict(name,data)
             pd.name = name;
-            pd.data = data;
+            fn = fieldnames(data);
+            for j = 1:length(fn)
+               pd.addprop(fn{j});
+               pd.(fn{j}) = data.(fn{j});
+            end
             
         end
         
@@ -25,7 +28,13 @@ classdef pls_dict < handle & matlab.mixin.Copyable
            s1 = rmfield(s1,ignore_fields);
            s2 = rmfield(s2,ignore_fileds);
            bool = isequal(s1,s2);
-           
+        end
+        
+        function s = to_struct(pd)
+            %return all propties that have been added, and also name prop
+           pprops = setdiff(properties('pls_dict'),{'name'});
+           s = struct(pd);
+           s = rmfield(s,pprops);
         end
         
         function update_grps = pdsave(dict,nm)
@@ -48,16 +57,22 @@ classdef pls_dict < handle & matlab.mixin.Copyable
                 newdict = true;
                 pd = dict;
             end
+            s = dict.to_struct();
             if isempty(pd.history)
-                pd.history=pls_dict(nm,dict.data);
+                pd.history=pls_dict(nm,s);
                 pd.last_update = now;
                 pd.time_stamps = now;
-                pd.data = dict.data;
             else
-                pd.history(end+1)=pls_dict(nm,dict.data);
+                pd.history(end+1)=pls_dict(nm,dict.to_struct());
                 pd.last_update = now;
                 pd.time_stamps(end+1) = now;
-                pd.data = dict.data;
+                fn = fieldnames(s);
+                for j = 1:length(fn)
+                    if ~isprop(pd,fn{j})
+                        pd.addprop(fn{j}); 
+                    end
+                    pd.(fn{j}) = s.(fn{j});
+                end
             end
 
             if newdict

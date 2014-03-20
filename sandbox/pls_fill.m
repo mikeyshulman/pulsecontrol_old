@@ -3,12 +3,12 @@ classdef pls_fill < pls_elem
     %   Detailed explanation goes here
     
     properties
+        time;
     end
     
     methods
         function rd = pls_fill(varargin)
             rd =rd@pls_elem(varargin{:});
-            rd.data = struct('time',[]);
         end
         
         function [pulsetab, mktab]=make_tab(rl)

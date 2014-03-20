@@ -199,7 +199,7 @@ classdef pls_plsgroup < handle
                         if isnan(pparams(n))
                             continue;
                         end
-                        dp_cp_pls.elems(pardef(n).elem_num).data.(pardef(n).par)(pardef(n).ind) = pparams(n);
+                        dp_cp_pls.elems(pardef(n).elem_num).(pardef(n).par)(pardef(n).ind) = pparams(n);
                     end
                 end
                 pack_data(m) = dp_cp_pls.to_tab;

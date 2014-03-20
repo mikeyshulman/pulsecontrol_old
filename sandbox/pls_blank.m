@@ -7,8 +7,8 @@ classdef pls_blank < pls_elem
     
     methods
         function bk = pls_blank(nm)
-            dt = struct('name',nm);
-            bk = bk@pls_elem(nm,dt);
+            bk = bk@pls_elem();
+            bk.name = nm;
         end
         
         function [pulsetab, mktab]=make_tab(~)
