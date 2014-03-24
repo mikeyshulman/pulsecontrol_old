@@ -80,9 +80,9 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
                fprintf('cannot find file with name %s, saving new dict\n',filename); 
             end
             save(filename,'pd');
-            pdlast = copy(pd);
-            pdlast.history = [];
-            pdlast.time_stamps = [];
+            pdlast = copy(pd); %#ok<NASGU>
+            %pdlast.history = []; pdlast.time_stamps = []; %no longer
+            %needed with modified copy behavior
             [f1,ext]=strtok(filename,'.'); % break the filename and ".mat"
             save([f1,'_last',ext],'pdlast'); 
             update_grps = [];
@@ -153,6 +153,7 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
         function cpObj = copyElement(obj)
             cpObj = copyElement@matlab.mixin.Copyable(obj);
             props = setdiff(properties(obj),properties(class(obj)));
+            props = setdiff(props,{'history','timestamps'});
             for j = 1:length(props)
                cpObj.addprop(props{j});
                cpObj.(props{j}) = obj.(props{j});
