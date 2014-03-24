@@ -1,6 +1,6 @@
 classdef pls_adprep < pls_elem
-    %UNTITLED9 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_adprep < pls_elem
+    %   adpred: ramp from start to finish in time
     
     properties
         time;

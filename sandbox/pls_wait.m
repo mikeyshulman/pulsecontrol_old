@@ -1,6 +1,6 @@
 classdef pls_wait < pls_elem
-    %UNTITLED12 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_wait < pls_elem
+    %   wait for a duration time at a location val*mult
     
     properties
         time;

@@ -1,6 +1,6 @@
 classdef pls_adread < pls_elem
-    %UNTITLED11 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_adread < pls_elem
+    %   represents adread. ramps from start to finish in time t
     
     properties
         time;

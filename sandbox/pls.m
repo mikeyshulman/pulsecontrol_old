@@ -1,6 +1,11 @@
 classdef pls
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls
+    %   terrible way of getting tab completion
+    %   put everything in this file that you want to be able to tab
+    %   complete into pulse elems. 
+    % the to_elem will try to
+    %   eval(['pls_',char(obj)]), so things will break if you add to this
+    %   list elements that don't exist;
     
     properties
     end

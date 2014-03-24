@@ -1,6 +1,7 @@
 classdef pls_blank < pls_elem
-    %UNTITLED12 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_blank < pls_elem
+    %   represents a blank pulse element. to be filled in with dictionaries
+    %   etc. just requires a name
     
     properties
     end

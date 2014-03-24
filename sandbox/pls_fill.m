@@ -1,6 +1,7 @@
 classdef pls_fill < pls_elem
-    %UNTITLED5 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_fill < pls_elem
+    %   fill the next element of the pulse to stretch the pulse to have
+    %   total length of property time.
     
     properties
         time;

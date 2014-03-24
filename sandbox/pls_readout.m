@@ -1,6 +1,12 @@
 classdef pls_readout < pls_elem
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_readout < pls_elem
+    %   represents the readout of a qubit
+    %   has properties
+    %       time: duration of readou
+    %       st_dly: the start delay (acquire data starting this long after
+    %           beginning)
+    %       ed_dly: end delay. opposite of start delay
+    %       flag: to flag certain readouts
     
     properties
         time; 

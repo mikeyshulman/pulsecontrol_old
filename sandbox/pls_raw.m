@@ -1,6 +1,10 @@
 classdef pls_raw < pls_elem
-    %UNTITLED13 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_raw < pls_elem
+    %   add raw elements to the pulsetab
+    %   has properties time and val
+    %   will return values:
+    %       pulsetab = [rw.time;rw.val];
+    %       mktab =  zeros(5, 0);
     
     properties
         time;

@@ -1,14 +1,15 @@
 classdef pls_pls < matlab.mixin.Copyable & handle
     %classdef pls_pls < matlab.mixin.Copyable & handle
-    %   represents a pulse template. has properties
-    %   elems: array of class pls_elem or derived classes
-    %   name:
-    %   pardef: struct with fields elem_num, par, ind
-    %   param_names
-    %   trafofn: string, fn to turn params into pardef
-    %   fill: struct with fields elem, time
-    %   derives from copyable. allows for pulses to be copied from plsdata
-    %   without modifying plsdata;
+    %   represents a pulse template. 
+    %   has properties
+    %       elems: array of class pls_elem or derived classes
+    %       name:
+    %       pardef: struct with fields elem_num, par, ind
+    %       param_names
+    %       trafofn: string, fn to turn params into pardef
+    %       fill: struct with fields elem, time
+    %       derives from copyable. allows for pulses to be 
+    %           copied from plsdata without modifying plsdata;
     
     properties
         elems;

@@ -1,6 +1,24 @@
 classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
+    %   a pulse dictionary gets applied to a pulse or to a pulse group
+    %   the class itself has properties:
+    %       name,
+    %       last update: time the dictionary was last modified and saved
+    %       history: an array of type pls_dict of all of the history
+    %       time_stamps: effectively [history.last_update]
+    %
+    %   the class is a child of dynamic props so you can add properties to
+    %   represent pulse elements, e.g. meas, reload, etc
+    %   Methods:
+    %       constructor: takes name, and a struct of properties to add
+    %       isequal
+    %       to_struct
+    %       pdsave: save the group under its name
+    %       pdload: a STATIC method to load a dict: 
+    %           e.g.: l = pls_dict.pdload('left') 
+    %           e.g.: l = pls_dict.pdload('left','all') % loads history 
+    %       copyObject is implemented to NOT copy history and timestamps by
+    %       default, need to pass copy(dict,'all') to get everyting
     
     properties
         name;
@@ -150,10 +168,12 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
     end
     
     methods (Access = protected)
-        function cpObj = copyElement(obj)
+        function cpObj = copyElement(obj,opts)
             cpObj = copyElement@matlab.mixin.Copyable(obj);
             props = setdiff(properties(obj),properties(class(obj)));
-            props = setdiff(props,{'history','timestamps'});
+            if ~exist(opts,'var') || isempty(strfind(opts,'all'))
+                props = setdiff(props,{'history','time_stamps'});
+            end
             for j = 1:length(props)
                cpObj.addprop(props{j});
                cpObj.(props{j}) = obj.(props{j});

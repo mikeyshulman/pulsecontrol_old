@@ -17,8 +17,8 @@ classdef pls_plsgroup < handle
         % varpar: a cell array, that holds information about the paremeters that
             % will be varied over the group. each element is a struct array
             % with fields:
-                % param_num: which element in params to change
-                % val: values that param(param_num) will take.
+                % param: which element in params to change
+                % val: values that param(param) will take.
                     %needs to be same length for all elements in varpar 
         % trafofn: str or fcn handle to distort wfs, (i.e. rc compensation)
         % chan: which channels of awgdata will get the group
@@ -166,10 +166,19 @@ classdef pls_plsgroup < handle
                 p = pinds(ind(m));
                 j=ind(m)-sum(lens(1:pinds(ind(m))-1));
                 
-                pparams = pg.params{p};
+                for jj = 1:length(pg.varpar{p})
+                    if ischar(pg.varpar{p}(jj).param)
+                       pg.varpar{p}(jj).param = find(ismember(pg.param_names,pg.varpar{p}(jj).param));
+                       if isempty(pg.varpar{p}(jj).param)
+                           error('no param name found matching param name %i',jj)
+                       elseif length(pg.varpar{p}(jj).param)>1
+                           error('found more than one param name matching varpar element %i',jj); 
+                       end
+                    end
+                end
                 if ~isempty(pg.varpar)
                     vpvals = vertcat(pg.varpar{p}.val); %
-                    pparams([pg.varpar{p}.param_num])=vpvals(:,j);
+                    pparams([pg.varpar{p}.param])=vpvals(:,j);
                     %mask = ~isnan(grpdef.varpar{p}(j, :));
                     %params(end-size(grpdef.varpar{p}, 2) + find(mask)) = grpdef.varpar{p}(j, mask);
                 end
@@ -235,9 +244,9 @@ classdef pls_plsgroup < handle
             end
             for k = 1:length(pg.varpar)
                 if isnumeric(pg.varpar{k}) && ~isempty(pg.varpar{k})
-                    vp = struct('param_num',[],'val',[]);
+                    vp = struct('param',[],'val',[]);
                     for j = 1:size(pg.varpar{k},2)
-                        vp.param_num(j) = length(pg.params{k})-j+1;
+                        vp.param(j) = length(pg.params{k})-j+1;
                         vp.val = pg.varpar{k}(:,j);
                     end
                     pg.varpar{k} = vp;

@@ -1,6 +1,11 @@
 classdef pls_reload < pls_elem
-    %UNTITLED5 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_reload < pls_elem
+    %   represents reload of a qubit
+    %   has properties:
+    %       time: stay a reload point for this time
+    %       after_wait: wait at [0 0] for this long after reload
+    %       ramp_time: ramp to load point in this time
+    %       pos: location in gate space [x,y]
     
     properties
         time;

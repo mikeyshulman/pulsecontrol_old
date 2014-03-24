@@ -1,6 +1,9 @@
 classdef pls_mark < pls_elem
-    %UNTITLED13 Summary of this class goes here
-    %   Detailed explanation goes here
+    %classdef pls_mark < pls_elem
+    %   at raw marktab data;
+    % e.g. add a 5 element vector
+    %   first element = start time of marker
+    %   next 4 = duration of marker for each channel
     
     properties
         time;
