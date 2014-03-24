@@ -92,7 +92,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                 filltime = pulse.fill.time;
                 fillelem = pulse.fill.elem;
             else
-                filltime = pulse.elems(fill_2).data.time;
+                filltime = pulse.elems(fill_2).time;
                 fillelem = fill_2;
             end
             
@@ -109,7 +109,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                     t(1,:) = t(1,:)+pulsetab(1,end);
                 end
                 if ~isempty(mktab)    
-                    mt(1,:) = mt(1,:)+mt(1,end);
+                    mt(1,:) = mt(1,:)+mktab(1,end);
                 end
                 pulsetab = [pulsetab,t];
                 mktab = [mktab,mt];
@@ -161,7 +161,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                 changed=false;
                 for i=1:length(pulse.elems)
                     if ~changed && isa(pulse.elems(i),'pls_blank') && pulse.elems(i).name(1)=='@'
-                        if isfield(pdtmp,pulse.elems(i).name(2:end))
+                        if isprop(pdtmp,pulse.elems(i).name(2:end))
                             nels=(pdtmp.(pulse.elems(i).name(2:end)));
                             if ischar(nels)
                                nels = pls_blank(nels); 
@@ -170,7 +170,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                             %ot = ~isnan(template.time);
                             %ov = ~isnan(template.val);
                             for j=1:length(nels)
-                                fn = fieldnames(nels(j).data);
+                                fn = properties(nels(j));
                                 for k = 1:length(fn)
                                     if isfield(template,fn{k}) && all(~isempty(template.(fn{k}))) && all(~isnan(template.(fn{k})))
                                         nels(j).(fn{k}) = template.(fn{k});
@@ -180,7 +180,7 @@ classdef pls_pls < matlab.mixin.Copyable & handle
                             pulse.elems = [pulse.elems(1:i-1), nels, pulse.elems(i+1:end)];
                             changed=1;
                             changedout=1;
-                            if isfield(pulse,'pardef') && ~isempty(pulse.pardef)
+                            if ~isempty(pulse.pardef)
                                 pulse.pardef = bump_pardef(pulse.pardef,i,length(nels)-1);
                             end
                             break;

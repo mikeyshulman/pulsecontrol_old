@@ -16,7 +16,7 @@ classdef pls_wait < pls_elem
         function [pulsetab, mktab]=make_tab(wt)
             pulsetab = zeros(3, 0);
             mktab =  zeros(5, 0);
-            if wt.data.time > 1e-11
+            if wt.time > 1e-11
                 %fillpos = fillpos +(fillpos==size(pulsetab,2)); % are we filling the wait? if so, we don't want to fill like a ramp
                 pulsetab(1, 1:2) = [wt.dt, wt.time]; %pinf.tbase*1e6/pinf.clk.
                 if ~isempty(wt.mult)

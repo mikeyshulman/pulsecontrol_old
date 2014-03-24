@@ -13,7 +13,7 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
     methods
         function pd=pls_dict(name,data)
             pd.name = name;
-            fn = fieldnames(data);
+            fn = setdiff(fieldnames(data),{'name'});
             for j = 1:length(fn)
                pd.addprop(fn{j});
                pd.(fn{j}) = data.(fn{j});
@@ -40,14 +40,14 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
         function update_grps = pdsave(dict,nm)
             global plsdata;
             if exist('nm','var')
-                fn = [plsdata.grpdir, 'pd_', nm,'.mat'];
+                filename = [plsdata.grpdir, 'pd_', nm,'.mat'];
             else
-                fn= [plsdata.grpdir, 'pd_', dict.name,'.mat'];
+                filename= [plsdata.grpdir, 'pd_', dict.name,'.mat'];
                 nm = dict.name;
             end
-            if exist(fn,'file')
+            if exist(filename,'file')
                 try
-                    load(fn);            
+                    load(filename);            
                     newdict = false;
                 catch
                     pd = dict;
@@ -59,7 +59,8 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
             end
             s = dict.to_struct();
             if isempty(pd.history)
-                pd.history=pls_dict(nm,s);
+                pd.history =copy(dict);
+                %pd.history=pls_dict(nm,s);
                 pd.last_update = now;
                 pd.time_stamps = now;
             else
@@ -76,13 +77,13 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
             end
 
             if newdict
-               fprintf('cannot find file with name %s, saving new dict\n',fn); 
+               fprintf('cannot find file with name %s, saving new dict\n',filename); 
             end
-            save(fn,'pd');
+            save(filename,'pd');
             pdlast = copy(pd);
             pdlast.history = [];
             pdlast.time_stamps = [];
-            [f1,ext]=strtok(fn,'.'); % break the filename and ".mat"
+            [f1,ext]=strtok(filename,'.'); % break the filename and ".mat"
             save([f1,'_last',ext],'pdlast'); 
             update_grps = [];
             global awgdata
@@ -151,6 +152,11 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
     methods (Access = protected)
         function cpObj = copyElement(obj)
             cpObj = copyElement@matlab.mixin.Copyable(obj);
+            props = setdiff(properties(obj),properties(class(obj)));
+            for j = 1:length(props)
+               cpObj.addprop(props{j});
+               cpObj.(props{j}) = obj.(props{j});
+            end
         end
     end
     

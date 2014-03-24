@@ -39,7 +39,7 @@ classdef pls_elem < matlab.mixin.Heterogeneous & handle & matlab.mixin.Copyable 
                 return
             end
             for j = 1:length(pe)
-                if ~isempty(pe(j).data)
+                if length(properties(pe)) > length(properties('pls_elem'))
                     [t,m] = pe(j).make_tab(varargin{:});
                     tab= [tab,t];%#ok<AGROW>
                     mktab = [mktab,m];%#ok<AGROW>

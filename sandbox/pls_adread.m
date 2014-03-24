@@ -19,10 +19,15 @@ classdef pls_adread < pls_elem
             mktab =  zeros(5, 0);
             if ar.time > 1e-11
                 pulsetab(1, end+(1:2)) = [ar.dt, ar.time];
-                if length(ar.mult)<2
-                   dir = ar.mult*[1 1]; 
-                else
-                    dir = ar.mult;
+                switch length(ar.mult)
+                    case 0
+                        dir = [1, 1];
+                    case 1
+                        dir = ar.mult*[1, 1];
+                    case 2
+                        dir = ar.mult;
+                    otherwise
+                        error('adread.mult has too many values');
                 end
                 pulsetab(2:3, end-1) = ar.start  * dir;
                 pulsetab(2:3, end) = ar.finish  * dir;

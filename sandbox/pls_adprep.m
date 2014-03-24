@@ -19,13 +19,19 @@ classdef pls_adprep < pls_elem
             mktab =  zeros(5, 0);
             if ap.time > 1e-11
                 pulsetab(1, end+(1:2)) = [ap.dt, ap.time];
-                if length(ap.mult)<2
-                   dir = ap.mult*[1 1]; 
-                else
-                    dir = ap.mult;
+                switch length(ap.mult)
+                    case 0
+                        dir = [1, 1];
+                    case 1
+                        dir = ap.mult*[1, 1];
+                    case 2
+                        dir = ap.mult;
+                    otherwise
+                        error('adprep.mult has too many values')
                 end
-                pulsetab(2:3, end-1) = ap.data.start  * dir;
-                pulsetab(2:3, end) = ap.data.finish  * dir;
+                   
+                pulsetab(2:3, end-1) = ap.start  * dir;
+                pulsetab(2:3, end) = ap.finish  * dir;
             end
             
         end

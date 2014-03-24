@@ -7,33 +7,36 @@ ar = pls_adread;
 wt = pls_wait;
 st = pls_raw;
 
-rl.data.time=.4;
-rl.data.pos = [-1 -2];
-rl.data.after_wait = .1;
-rl.data.ramp_time = .02;
 
-rd.data.time = 1;
-rd.data.ed_dly=0;
-rd.data.meas_pt=[0 0];
-rd.data.st_dly = .03;
+rl.time=.4;
+rl.pos = [-1 -2];
+rl.after_wait = .1;
+rl.ramp_time = .02;
 
-ap.data.time = .3;
-ap.data.start = 1;
-ap.data.end = 4;
-ap.data.mult = [1 -1];
+rd.time = 1;
+rd.ed_dly=0;
+rd.meas_pt=[0 0];
+rd.st_dly = .03;
 
-ar.data = ap.data;
-ar.data.start = ap.data.end;
-ar.data.end = ap.data.start;
+ap.time = .3;
+ap.start = 1;
+ap.finish = 4;
+ap.mult = [1 -1];
 
-wt.data.time = .5;
-wt.data.val = [0,0];
+ar.time = .3;
+ar.start = 4;
+ar.finish = 1;
+ar.mult = [1 -1];
+
+
+wt.time = .5;
+wt.val = [0,0];
 
 sep = pls_wait;
-sep.data.val = [4 -4];
+sep.val = [4 -4];
 
-st.data.time = 0;
-st.data.val = [0;0];
+st.time = 0;
+st.val = [0;0];
 
 %%
 
@@ -67,24 +70,26 @@ pgroup = pls_plsgroup(pg);
 
 
 %%
-
-dd.dbzprep = pls_wait; dd.dbzprep.data.val = [-4,4];dd.dbzprep.data.time = .005;
+clear dd;
+dd.dbzprep = pls_wait; dd.dbzprep.val = [-4,4];dd.dbzprep.time = .005;
 dd.dbzread = pls_blank('@dbzprep');
-dd.dbzpi = copy(dd.dbzprep); dd.dbzpi.data.time = .01;
+dd.dbzpi = copy(dd.dbzprep); dd.dbzpi.time = .01;
 
 ap = pls_adprep;
-ap.data.time = .3;
-ap.data.start = 1;
-ap.data.end = 4;
-ap.data.mult = [1 -1];
+ap.time = .3;
+ap.start = 1;
+ap.finish = 4;
+ap.mult = [1 -1];
 dd.adprep = copy(ap);
 dd.adread = pls_adread;
-dd.adread.data =dd.adprep.data;
+dd.adread.start =1; dd.adread.finish = 4; dd.adread.time = .4;
 dd.reload = pls_reload();
-dd.reload.data = struct('time',.2,'after_wait',.05,'ramp_time',.005,'pos',[-1,-2]);
+dd.reload.time = .2; dd.reload.after_wait = .05; dd.reload.ramp_time = .005; dd.reload.pos = [-1,-2];
 dd.readout = pls_readout;
-dd.readout.data=struct('time',1,'st_dly',.2,'ed_dly',0,'meas_pt',[],'flag',1);
+dd.readout.time = 1; dd.readout.st_dly = .2; dd.readout.ed_dly = 0; dd.readout.meas_pt = [0 0]; dd.readout.flag = 1;
 dd.start = st;
+dd.exch = pls_wait;
 
-dict = pls_dict('right',dd);
+
+dict = pls_dict('left',dd);
 

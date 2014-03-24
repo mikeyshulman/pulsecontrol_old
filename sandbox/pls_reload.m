@@ -17,7 +17,7 @@ classdef pls_reload < pls_elem
         function [pulsetab, mktab]=make_tab(rl)
             mktab = zeros(5,0);
             pulsetab = zeros(3, 0);
-            if rl.data.time > 1e-11
+            if rl.time > 1e-11
                 pulsetab(1, 1:4) = cumsum([rl.ramp_time, rl.time, rl.ramp_time,rl.after_wait]);
                 pulsetab(2:3, end+(-3:0)) = [repmat(rl.pos', 1, 2), zeros(2)];
             end
