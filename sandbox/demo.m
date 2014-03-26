@@ -50,7 +50,7 @@ s.name = 'testpg';
 s.pulses = 2;
 s.params = {[4 .2 .3]};
 s.chan = [3 4];
-s.varpar{1} =struct('param_num',2,'val',(1:100)*1e-3);
+s.varpar{1} =struct('param',2,'val',(1:100)*1e-3);
 %s.dict = {'right'};
 s.dict = {struct('prep','@adprep','read','@adread'),'left'};
 clear pg

@@ -171,7 +171,7 @@ classdef pls_dict < handle & matlab.mixin.Copyable & dynamicprops
         function cpObj = copyElement(obj,opts)
             cpObj = copyElement@matlab.mixin.Copyable(obj);
             props = setdiff(properties(obj),properties(class(obj)));
-            if ~exist(opts,'var') || isempty(strfind(opts,'all'))
+            if ~exist('opts','var') || isempty(strfind(opts,'all'))
                 props = setdiff(props,{'history','time_stamps'});
             end
             for j = 1:length(props)
